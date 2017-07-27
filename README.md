@@ -15,9 +15,9 @@ Here we are setting the WD to google drive.  See earlier versions for getting th
 # X12CHGSCH only have one for this variable so put in zeros for the rest rep(length(X12CHGSCH), 0), X12CHGTCH, X34CHGTCH
 # Need to grab the second year versions of these.  If no second version, create a second version with the "2 and 4" title so we can aggregate the data later.
 
+# Ok just need first one and then take the difference between the dependent variables to create 
 
-data1 = cbind(X1PRNCON = data$X1PRNCON, X2PRNCON = data$X2PRNCON, X4PRNCON = data$X4PRNCON, X1PRNSOC = data$X1PRNSOC, X2PRNSOC = data$X2PRNSOC, X4PRNSOC = data$X4PRNSOC, X1BMI = data$X1BMI, X2BMI = data$X2BMI, X4BMI = data$X4BMI, X1PAR1AGE = data$X1PAR1AGE, X2PAR1AGE = data$X2PAR1AGE, X4PAR1AGE = data$X4PAR1AGE_R, X1PAR1EMP = data$X1PAR1EMP, X2PAR1EMP = data$X1PAR1EMP, X4PAR1EMP = data$X4PAR1EMP_I, X1HTOTAL = data$X1HTOTAL, X2HTOTAL = data$X2HTOTAL, X4HTOTAL = data$X4HTOTAL, X1POVTY = data$X2POVTY, X2POVTY = data$X2POVTY, X4POVTY_I = data$X4POVTY_I, X1PAR1ED_I = data$X12PAR1ED_I, X2PAR1ED_I = data$X12PAR1ED_I, X4PAR1ED_I = data$X4PAR1ED_I, X1LANGST = data$X12LANGST, X2LANGST = data$X12LANGST, X4LANGST = data$X4LANGST,  X1_CHSEX_R = data$X_CHSEX_R, X2_CHSEX_R = data$X_CHSEX_R, X4_CHSEX_R = data$X_CHSEX_R, X1HPARNT = data$X1HPARNT, X2HPARNT = data$X2HPARNT,  X4HPARNT = data$X4HPARNT, X1KAGE_R = data$X1KAGE_R, X2KAGE_R = data$X2KAGE_R, X4AGE = data$X4AGE, X1CHGSCH = rep(0, length(data$X12CHGSCH)), X2CHGSCH = data$X12CHGSCH, X4CHGTCH = data$X34CHGTCH
-, S1REGSKL  = data$S2REGSKL, S2REGSKL  = data$S2REGSKL, S4REGSKL  = data$S2REGSKL, X1PAR1RAC = data$X1PAR1RAC, X2PAR1RAC = data$X2PAR1RAC, X4PAR1RAC = data$X4PAR1RAC, X1_RACETHP_R = data$X_RACETHP_R, X2_RACETHP_R = data$X_RACETHP_R, X4_RACETHP_R = data$X_RACETHP_R)
+data1 = cbind(X1PRNCON = data$X4PRNCON-data$X1PRNCON, X1PRNSOC = data$X4PRNSOC-data$X1PRNSOC, X1BMI = data$X1BMI, X1PAR1AGE = data$X1PAR1AGE, X1PAR1EMP = data$X1PAR1EMP, X1HTOTAL = data$X1HTOTAL, X1POVTY = data$X2POVTY, X1PAR1ED_I = data$X12PAR1ED_I, X1LANGST = data$X12LANGST,  X1_CHSEX_R = data$X_CHSEX_R, X1HPARNT = data$X1HPARNT, X1KAGE_R = data$X1KAGE_R, X1CHGSCH = data$X12CHGSCH, S1REGSKL  = data$S2REGSKL , X1PAR1RAC = data$X1PAR1RAC, X1_RACETHP_R = data$X_RACETHP_R)
 head(data1)
 
 # Change the -9 to NAs
@@ -26,14 +26,14 @@ data1 = as.data.frame(data1)
 head(data1)
 dim(data1)
 ```
-First get them in long form before we make transformation
+First get them in long form before we make transformation.  Don't need this now, because mathit cannot do longitudinal analysis.
 ```{r}
 
-data1 = as.data.frame(data1)
-dim(data1)
-library(reshape)
-data1 = reshape(data1, varying = list(c("X1PRNCON", "X2PRNCON", "X4PRNCON"), c("X1PRNSOC","X2PRNSOC","X4PRNSOC"), c("X1BMI", "X2BMI", "X4BMI"), c("X1PAR1AGE" , "X2PAR1AGE" , "X4PAR1AGE"), c("X1PAR1EMP" , "X2PAR1EMP" , "X4PAR1EMP"), c("X1HTOTAL" , "X2HTOTAL" , "X4HTOTAL"), c("X1POVTY", "X2POVTY", "X4POVTY_I" ), c("X1PAR1ED_I", "X2PAR1ED_I", "X4PAR1ED_I"), c("X1LANGST", "X2LANGST", "X4LANGST"), c("X1_CHSEX_R", "X2_CHSEX_R", "X4_CHSEX_R"), c("X1HPARNT", "X2HPARNT",  "X4HPARNT"), c("X1KAGE_R", "X2KAGE_R", "X4AGE"), c("X1CHGSCH", "X2CHGSCH", "X4CHGTCH"), c("S1REGSKL", "S2REGSKL", "S4REGSKL"), c("X1PAR1RAC", "X2PAR1RAC", "X4PAR1RAC"), c("X1_RACETHP_R", "X2_RACETHP_R", "X4_RACETHP_R")), times = c(1,2,4), direction = "long")
-data1 = as.data.frame(data1)
+#data1 = as.data.frame(data1)
+#dim(data1)
+#library(reshape)
+#data1 = reshape(data1, varying = list(c("X1PRNCON", "X2PRNCON", "X4PRNCON"), c("X1PRNSOC","X2PRNSOC","X4PRNSOC"), c("X1BMI", "X2BMI", "X4BMI"), c("X1PAR1AGE" , "X2PAR1AGE" , "X4PAR1AGE"), c("X1PAR1EMP" , "X2PAR1EMP" , "X4PAR1EMP"), c("X1HTOTAL" , "X2HTOTAL" , "X4HTOTAL"), c("X1POVTY", "X2POVTY", "X4POVTY_I" ), c("X1PAR1ED_I", "X2PAR1ED_I", "X4PAR1ED_I"), c("X1LANGST", "X2LANGST", "X4LANGST"), c("X1_CHSEX_R", "X2_CHSEX_R", "X4_CHSEX_R"), c("X1HPARNT", "X2HPARNT",  "X4HPARNT"), c("X1KAGE_R", "X2KAGE_R", "X4AGE"), c("X1CHGSCH", "X2CHGSCH", "X4CHGTCH"), c("S1REGSKL", "S2REGSKL", "S4REGSKL"), c("X1PAR1RAC", "X2PAR1RAC", "X4PAR1RAC"), c("X1_RACETHP_R", "X2_RACETHP_R", "X4_RACETHP_R")), times = c(1,2,4), direction = "long")
+#data1 = as.data.frame(data1)
 
 ```
 
@@ -103,6 +103,7 @@ head(data7)
 data1 = cbind(data2, data4, S1REGSKL, data6,data7)
 data1 = as.data.frame(data1)
 head(data1)
+dim(data1)
 
 ```
 
@@ -127,7 +128,17 @@ ECLSK1  = read.csv("ECLSK1.csv", header = TRUE)
 ECLSK1 = ECLSK1[c(-1)]
 ECLSK1 = as.data.frame(ECLSK1)
 head(ECLSK1)
-m.out = matchit(S1REGSKL ~ )
+m.out = matchit(S1REGSKL ~ X1_CHSEX_R + X1HPARNT + X1CHGSCH + X_HISP_R + X_WHITE_R + X_BLACK_R + X_ASIAN_R + X_AMINAN_R + X_HAWPI_R + X1PAR1RAC + X1PRNCON + X1PRNSOC + X1BMI + X1PAR1AGE + X1PAR1EMP + X1HTOTAL + X1POVTY + X1PAR1ED_I + X1KAGE_R + time, data = ECLSK1, method = "nearest", ratio = 1)
+m.out$treat
+sum(m.out$discarded)
+
+write.csv(m.out$X, "test.csv")
+library(Zelig)
+library(nlme)
+
+unconVamData = lme(X1PRNCON ~ S1REGSKL + X1_CHSEX_R + X1HPARNT + X1CHGSCH + X_HISP_R + X_WHITE_R + X_BLACK_R + X_ASIAN_R + X_AMINAN_R + X_HAWPI_R + X1PAR1RAC  + X1PRNSOC + X1BMI + X1PAR1AGE + X1PAR1EMP + X1HTOTAL + X1POVTY + X1PAR1ED_I + X1KAGE_R + time, random =~ S1REGSKL | time, data = vamDataInd, method = "ML")
+z.out = zelig(dep ~ public + minority + freeLunch + size, model = "ls",data = m.outCSV)
+summary(z.out)
 ```
 
 
