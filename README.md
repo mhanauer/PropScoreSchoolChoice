@@ -326,8 +326,63 @@ names(SISes5) = c("SE")
 allSEsSI = t(as.matrix(cbind(SISes1, SISes2, SISes3, SISes4, SISes5)))
 
 allParsSesSICom = mi.meld(q = allParsSI, se = allSEsSI)
-allParsPaper = t(as.data.frame(allParsSesSICom$q.mi))
-names(allParsPaper) = c("Variable", "Parameter Estimate")
-write.csv(allParsPaper, "allParsPaper.csv")
+allParsPaperSI = t(as.data.frame(allParsSesSICom$q.mi))
+
+allSesPaperSI = t(as.data.frame(allParsSesSICom$se.mi))
+
+allParSesPaperSI = cbind(allParsPaperSI, allSesPaperSI)
+write.csv(allParSesPaperSI, "allParSesPaperSI.csv")
+```
+Now we are getting the combined estimates for the SC variable
+```{r}
+# Here we need to rerrange the variables, because it wasn't working.  Here we are getting the
+
+SCCof1 = as.data.frame(SCCof1)
+names(SCCof1) = c("ParEst")
+
+SCCof2 = as.data.frame(SCCof2)
+names(SCCof2) = c("ParEst")
+
+SCCof3 = as.data.frame(SCCof3)
+names(SCCof3) = c("ParEst")
+
+SCCof3 = as.data.frame(SCCof3)
+names(SCCof3) = c("ParEst")
+
+SCCof4 = as.data.frame(SCCof4)
+names(SCCof4) = c("ParEst")
+
+SCCof5 = as.data.frame(SCCof5)
+names(SCCof5) = c("ParEst")
+
+allParsSC = t(as.matrix(cbind(SCCof1, SCCof2, SCCof3, SCCof4, SCCof5)))
+
+SCSes1 = as.data.frame(SCSes1)
+names(SCSes1) = c("SE")
+
+SCSes2 = as.data.frame(SCSes2)
+names(SCSes2) = c("SE")
+
+SCSes2 = as.data.frame(SCSes2)
+names(SCSes2) = c("SE")
+
+SCSes3 = as.data.frame(SCSes3)
+names(SCSes3) = c("SE")
+
+SCSes4 = as.data.frame(SCSes4)
+names(SCSes4) = c("SE")
+
+SCSes5 = as.data.frame(SCSes5)
+names(SCSes5) = c("SE")
+
+allSEsSC = t(as.matrix(cbind(SCSes1, SCSes2, SCSes3, SCSes4, SCSes5)))
+
+allParsSesSCCom = mi.meld(q = allParsSC, se = allSEsSC)
+allParsPaperSC = t(as.data.frame(allParsSesSCCom$q.mi))
+
+allSesPaperSC = t(as.data.frame(allParsSesSCCom$se.mi))
+
+allParSesPaperSC = cbind(allParsPaperSC, allSesPaperSC)
+write.csv(allParSesPaperSC, "allParSesPaperSC.csv")
 ```
 
