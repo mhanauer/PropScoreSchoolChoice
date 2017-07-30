@@ -134,20 +134,19 @@ m.dataMeans1 = apply(m.data1, 2, mean)
 m.dataSD1 = apply(m.data1,2, sd)
 
 # Now we conducting residual analysis for the first data set.  First grab the residuals and get them in the same format
-resZ.outSC1 = as.data.frame(residuals(z.outSC1))
+resZ.outSC1 = as.data.frame(z.outSC1$get_residuals())
 resZ.outSC1 = resZ.outSC1[,1]
 resZ.outSC1 = as.data.frame(resZ.outSC1)
 resZ.outSC1 = as.data.frame(resZ.outSC1$resZ.outSC1)
 
-resZ.outSC1 = z.outSC1$get_residuals()
-fitZ.outSC1 = z.outSC1$get_predict()
 
-fitZ.outSC1 = as.data.frame(fitted.values$z.outSC1)
+fitZ.outSC1 = as.data.frame(z.outSC1$get_predict())
 fitZ.outSC1 = fitZ.outSC1[,1]
 fitZ.outSC1 = as.data.frame(fitZ.outSC1)
 fitZ.outSC1 = as.data.frame(fitZ.outSC1$fitZ.outSC1)
-
-
+fitResidSC1 = cbind(fitZ.outSC1, resZ.outSC1)
+plot(fitResidSC1)
+plot(resZ.outSC1)
 
 resZ.outSC1 = scale(resZ.outSC1, center = TRUE, scale = TRUE)
 hist(resZ.outSC1, xlim = c(-5,5))
