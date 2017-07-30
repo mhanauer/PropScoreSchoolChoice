@@ -117,7 +117,7 @@ Now we are analyzing one data set, using matchIT and seeing if we can get a regu
 Here are the estimates for the first model.  Need to grab the parameter estimates and sd's 
 ```{r}
 library(MatchIt)
-setwd("~/Desktop")
+setwd("~/Google Drive/PARCS/Projects/PropScore/Data")
 ECLSK1  = read.csv("ECLSK1.csv", header = TRUE)
 ECLSK1 = ECLSK1[c(-1)]
 ECLSK1 = na.omit(ECLSK1)
@@ -133,10 +133,34 @@ m.data1 <- match.data(m.out1)
 m.dataMeans1 = apply(m.data1, 2, mean)
 m.dataSD1 = apply(m.data1,2, sd)
 
+# Now we conducting residual analysis for the first data set.  First grab the residuals and get them in the same format
+resZ.outSC1 = as.data.frame(residuals(z.outSC1))
+resZ.outSC1 = resZ.outSC1[,1]
+resZ.outSC1 = as.data.frame(resZ.outSC1)
+resZ.outSC1 = as.data.frame(resZ.outSC1$resZ.outSC1)
+
+resZ.outSC1 = z.outSC1$get_residuals()
+fitZ.outSC1 = z.outSC1$get_predict()
+
+fitZ.outSC1 = as.data.frame(fitted.values$z.outSC1)
+fitZ.outSC1 = fitZ.outSC1[,1]
+fitZ.outSC1 = as.data.frame(fitZ.outSC1)
+fitZ.outSC1 = as.data.frame(fitZ.outSC1$fitZ.outSC1)
+
+
+
+resZ.outSC1 = scale(resZ.outSC1, center = TRUE, scale = TRUE)
+hist(resZ.outSC1, xlim = c(-5,5))
+above = sum(ifelse(resZ.outSC1 > 3, 1, 0))
+below = sum(ifelse(resZ.outSC1 < -3, 1, 0))
+totalS = sum(above, below)
+totalS / (7694 + 19)*100
+
 
 library(Zelig)
 # Grabbing the parameter estimates and se's
 z.outSC1 = zelig(X1PRNCON ~ + S1REGSKL +  X1_CHSEX_R + X1HPARNT + X1CHGSCH + X_HISP_R + X_WHITE_R + X_BLACK_R + X_ASIAN_R + X_AMINAN_R + X_HAWPI_R + X1PAR1RAC + X1PRNSOC + X1BMI + X1PAR1AGE + X1PAR1EMP + X1HTOTAL + X1POVTY + X1PAR1ED_I + X1KAGE_R, model = "ls", data = match.data(m.out1))
+
 SCCof1 =  z.outSC1$get_coef()
 SCSes1 = z.outSC1$get_se()
 
@@ -150,7 +174,7 @@ SISes1 = z.outSI1$get_se()
 ```
 Now we get the estimates for the second data set
 ```{r}
-setwd("~/Desktop")
+setwd("~/Google Drive/PARCS/Projects/PropScore/Data")
 ECLSK2  = read.csv("ECLSK2.csv", header = TRUE)
 ECLSK2 = ECLSK2[c(-1)]
 ECLSK2 = na.omit(ECLSK2)
