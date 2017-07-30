@@ -102,6 +102,12 @@ library(mitools)
 library(survey)
 m = 5
 a.out = amelia(x = data1, m=m, ords = c("X1PAR1EMP", "X1POVTY", "X1PAR1ED_I"), logs = c("X1HTOTAL"), noms = c("X_HISP_R", "X_BLACK_R", "X_WHITE_R", "X_ASIAN_R","X_AMINAN_R", "X_HAWPI_R", "X1_CHSEX_R", "X1LANGST", "X1HPARNT", "X1CHGSCH", "X1PAR1RAC", "S1REGSKL"))
+
+compare.density(a.out, var = "X1PRNCON", main = "Observed and Imputed values of Self Control")
+compare.density(a.out, var = "X1PRNSOC", main = "Observed and Imputed values of Social Interaction")
+disperse(a.out)
+summary(a.out)
+
 # Now we can creat seperate data set and then analyze them seperately and combine them later with the mi.meld function in Ameila
 write.amelia(obj = a.out, file.stem = "ECLSK")
 
