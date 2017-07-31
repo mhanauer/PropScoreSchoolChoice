@@ -15,15 +15,24 @@ Here we are setting the WD to google drive.  See earlier versions for getting th
 # X12CHGSCH only have one for this variable so put in zeros for the rest rep(length(X12CHGSCH), 0), X12CHGTCH, X34CHGTCH
 # Need to grab the second year versions of these.  If no second version, create a second version with the "2 and 4" title so we can aggregate the data later.
 
-# Ok just need first one and then take the difference between the dependent variables to create 
 
-data1 = cbind(X1PRNCON = data$X4PRNCON-data$X1PRNCON, X1PRNSOC = data$X4PRNSOC-data$X1PRNSOC, X1BMI = data$X1BMI, X1PAR1AGE = data$X1PAR1AGE, X1PAR1EMP = data$X1PAR1EMP, X1HTOTAL = data$X1HTOTAL, X1POVTY = data$X2POVTY, X1PAR1ED_I = data$X12PAR1ED_I, X1LANGST = data$X12LANGST,  X1_CHSEX_R = data$X_CHSEX_R, X1HPARNT = data$X1HPARNT, X1KAGE_R = data$X1KAGE_R, X1CHGSCH = data$X12CHGSCH, S1REGSKL  = data$S2REGSKL , X1PAR1RAC = data$X1PAR1RAC, X1_RACETHP_R = data$X_RACETHP_R)
+data1 = cbind(X1PRNCON = data$X1PRNCON, X2PRNCON = data$X2PRNCON, X4PRNCON = data$X4PRNCON, X1PRNSOC = data$X1PRNSOC, X2PRNSOC = data$X2PRNSOC, X4PRNSOC = data$X4PRNSOC, X1PRNSAD = data$X1PRNSAD, X2PRNSAD = data$X2PRNSAD, X4PRNSAD = data$X4PRNSAD, X1PRNIMP = data$X1PRNIMP, X2PRNIMP = data$X2PRNIMP, X4PRNIMP = data$X4PRNIMP, X1BMI = data$X1BMI, X2BMI = data$X2BMI, X4BMI = data$X4BMI, X1PAR1AGE = data$X1PAR1AGE, X2PAR1AGE = data$X2PAR1AGE, X4PAR1AGE = data$X4PAR1AGE_R, X1PAR1EMP = data$X1PAR1EMP, X2PAR1EMP = data$X1PAR1EMP, X4PAR1EMP = data$X4PAR1EMP_I, X1HTOTAL = data$X1HTOTAL, X2HTOTAL = data$X2HTOTAL, X4HTOTAL = data$X4HTOTAL, X1POVTY = data$X2POVTY, X2POVTY = data$X2POVTY, X4POVTY_I = data$X4POVTY_I, X1PAR1ED_I = data$X12PAR1ED_I, X2PAR1ED_I = data$X12PAR1ED_I, X4PAR1ED_I = data$X4PAR1ED_I, X1LANGST = data$X12LANGST, X2LANGST = data$X12LANGST, X4LANGST = data$X4LANGST,  X1_CHSEX_R = data$X_CHSEX_R, X2_CHSEX_R = data$X_CHSEX_R, X4_CHSEX_R = data$X_CHSEX_R, X1HPARNT = data$X1HPARNT, X2HPARNT = data$X2HPARNT,  X4HPARNT = data$X4HPARNT, X1KAGE_R = data$X1KAGE_R, X2KAGE_R = data$X2KAGE_R, X4AGE = data$X4AGE, X1CHGSCH = rep(0, length(data$X12CHGSCH)), X2CHGSCH = data$X12CHGSCH, X4CHGTCH = data$X34CHGTCH, S1REGSKL  = data$S2REGSKL, S2REGSKL  = data$S2REGSKL, S4REGSKL  = data$S2REGSKL, X1PAR1RAC = data$X1PAR1RAC, X2PAR1RAC = data$X2PAR1RAC, X4PAR1RAC = data$X4PAR1RAC, X1_RACETHP_R = data$X_RACETHP_R, X2_RACETHP_R = data$X_RACETHP_R, X4_RACETHP_R = data$X_RACETHP_R)
 head(data1)
 
 # Change the -9 to NAs
 data1 = apply(data1, 2, function(x){ifelse(x == -9, NA, x)})
 data1 = as.data.frame(data1)
 head(data1)
+dim(data1)
+```
+First get them in long form before we make transformation
+```{r}
+
+data1 = as.data.frame(data1)
+dim(data1)
+library(reshape)
+data1 = reshape(data1, varying = list(c("X1PRNCON", "X2PRNCON", "X4PRNCON"), c("X1PRNSOC","X2PRNSOC","X4PRNSOC"), c("X1PRNSAD", "X2PRNSAD", "X4PRNSAD"), c("X1PRNIMP", "X2PRNIMP", "X4PRNIMP"), c("X1BMI", "X2BMI", "X4BMI"), c("X1PAR1AGE" , "X2PAR1AGE" , "X4PAR1AGE"), c("X1PAR1EMP" , "X2PAR1EMP" , "X4PAR1EMP"), c("X1HTOTAL" , "X2HTOTAL" , "X4HTOTAL"), c("X1POVTY", "X2POVTY", "X4POVTY_I" ), c("X1PAR1ED_I", "X2PAR1ED_I", "X4PAR1ED_I"), c("X1LANGST", "X2LANGST", "X4LANGST"), c("X1_CHSEX_R", "X2_CHSEX_R", "X4_CHSEX_R"), c("X1HPARNT", "X2HPARNT",  "X4HPARNT"), c("X1KAGE_R", "X2KAGE_R", "X4AGE"), c("X1CHGSCH", "X2CHGSCH", "X4CHGTCH"), c("S1REGSKL", "S2REGSKL", "S4REGSKL"), c("X1PAR1RAC", "X2PAR1RAC", "X4PAR1RAC"), c("X1_RACETHP_R", "X2_RACETHP_R", "X4_RACETHP_R")), times = c(1,2,4), direction = "long")
+data1 = as.data.frame(data1)
 dim(data1)
 ```
 Now we need to alter the variables to be binary in necessary.  First we create get all the variables where 1 is the interest and get those as 1 and rest as zero.  Then for parent ethnicty we change the ones to zero and everything else to one to have a non-white be one.  Then we need to grab a seperate subset of the all the remaining variables, so we don't double up on those variables when we cbind them togehter at the end.  I then needed to get the variables in the same order and rename with meaningful names.  Need to grab the correct data from data sets two and three, because those have the binary transformations.
@@ -84,14 +93,13 @@ Reording the variables to be in the correct order.  Grab each variable from the 
 ```{r}
 # Rearrange and then rename variables to get them in the correct order.  This includes getting data2 and data3 into the correct order as well, because you need to rename all of these variables. 
 
-data7 = cbind(X1PRNCON = data1$X1PRNCON, X1PRNSOC = data1$X1PRNSOC, X1BMI = data1$X1BMI, X1PAR1AGE = data1$X1PAR1AGE, X1PAR1EMP = data$X1PAR1EMP, X1HTOTAL = data$X1HTOTAL,  X1POVTY = data1$X1POVTY, X1PAR1ED_I = data1$X1PAR1ED_I, X1KAGE_R = data1$X1KAGE_R)
+data7 = cbind(X1PRNCON = data1$X1PRNCON, X1PRNSOC = data1$X1PRNSOC, X1PRNSAD = data1$X1PRNSAD, X1PRNIMP = data1$X1PRNIMP, X1BMI = data1$X1BMI, X1PAR1AGE = data1$X1PAR1AGE, X1PAR1EMP = data$X1PAR1EMP, X1HTOTAL = data$X1HTOTAL,  X1POVTY = data1$X1POVTY, X1PAR1ED_I = data1$X1PAR1ED_I, X1KAGE_R = data1$X1KAGE_R)
 data7 = as.data.frame(data7)
 head(data7)
 data1 = cbind(data2, data4, S1REGSKL, data6,data7)
 data1 = as.data.frame(data1)
 head(data1)
 dim(data1)
-
 ```
 
 Here we will use Amelia.  Need to set m as five for five imputed data sets.  Then we place each of the variables into their appropriate categories.
@@ -102,15 +110,15 @@ library(mitools)
 library(survey)
 m = 5
 a.out = amelia(x = data1, m=m, ords = c("X1PAR1EMP", "X1POVTY", "X1PAR1ED_I"), logs = c("X1HTOTAL"), noms = c("X_HISP_R", "X_BLACK_R", "X_WHITE_R", "X_ASIAN_R","X_AMINAN_R", "X_HAWPI_R", "X1_CHSEX_R", "X1LANGST", "X1HPARNT", "X1CHGSCH", "X1PAR1RAC", "S1REGSKL"))
+summary(a.out)
 
 compare.density(a.out, var = "X1PRNCON", main = "Observed and Imputed values of Self Control")
 compare.density(a.out, var = "X1PRNSOC", main = "Observed and Imputed values of Social Interaction")
 disperse(a.out)
-summary(a.out)
+
 
 # Now we can creat seperate data set and then analyze them seperately and combine them later with the mi.meld function in Ameila
 write.amelia(obj = a.out, file.stem = "ECLSK")
-
 ```
 Now we are analyzing one data set, using matchIT and seeing if we can get a regular regression and then a multilevel model with time.  We matched everyone.
 
@@ -133,6 +141,24 @@ m.data1 <- match.data(m.out1)
 m.dataMeans1 = apply(m.data1, 2, mean)
 m.dataSD1 = apply(m.data1,2, sd)
 
+
+library(Zelig)
+# Grabbing the parameter estimates and se's NEED TO ADD WEIGHTS
+z.outSC1 = zelig(X1PRNCON ~ + S1REGSKL +  X1_CHSEX_R + X1HPARNT + X1CHGSCH + X_HISP_R + X_WHITE_R + X_BLACK_R + X_ASIAN_R + X_AMINAN_R + X_HAWPI_R + X1PAR1RAC + X1PRNSOC + X1BMI + X1PAR1AGE + X1PAR1EMP + X1HTOTAL + X1POVTY + X1PAR1ED_I + X1KAGE_R, model = "ls", data = match.data(m.out1))
+
+SCCof1 =  z.outSC1$get_coef()
+SCSes1 = z.outSC1$get_se()
+
+
+# Here is for the social interaction variable.
+z.outSI1 = zelig(X1PRNSOC ~ + S1REGSKL +  X1_CHSEX_R + X1HPARNT + X1CHGSCH + X_HISP_R + X_WHITE_R + X_BLACK_R + X_ASIAN_R + X_AMINAN_R + X_HAWPI_R + X1PAR1RAC + X1PRNCON + X1BMI + X1PAR1AGE + X1PAR1EMP + X1HTOTAL + X1POVTY + X1PAR1ED_I + X1KAGE_R, model = "ls", data = match.data(m.out1))
+
+SICof1 =  z.outSI1$get_coef()
+SISes1 = z.outSI1$get_se()
+
+```
+Now we are conducting residual analysis
+```{r}
 # Now we conducting residual analysis for the first data set.  First grab the residuals and get them in the same format
 resZ.outSC1 = as.data.frame(z.outSC1$get_residuals())
 resZ.outSC1 = resZ.outSC1[,1]
@@ -154,23 +180,9 @@ above = sum(ifelse(resZ.outSC1 > 3, 1, 0))
 below = sum(ifelse(resZ.outSC1 < -3, 1, 0))
 totalS = sum(above, below)
 totalS / (7694 + 19)*100
-
-
-library(Zelig)
-# Grabbing the parameter estimates and se's
-z.outSC1 = zelig(X1PRNCON ~ + S1REGSKL +  X1_CHSEX_R + X1HPARNT + X1CHGSCH + X_HISP_R + X_WHITE_R + X_BLACK_R + X_ASIAN_R + X_AMINAN_R + X_HAWPI_R + X1PAR1RAC + X1PRNSOC + X1BMI + X1PAR1AGE + X1PAR1EMP + X1HTOTAL + X1POVTY + X1PAR1ED_I + X1KAGE_R, model = "ls", data = match.data(m.out1))
-
-SCCof1 =  z.outSC1$get_coef()
-SCSes1 = z.outSC1$get_se()
-
-
-# Here is for the social interaction variable.
-z.outSI1 = zelig(X1PRNSOC ~ + S1REGSKL +  X1_CHSEX_R + X1HPARNT + X1CHGSCH + X_HISP_R + X_WHITE_R + X_BLACK_R + X_ASIAN_R + X_AMINAN_R + X_HAWPI_R + X1PAR1RAC + X1PRNCON + X1BMI + X1PAR1AGE + X1PAR1EMP + X1HTOTAL + X1POVTY + X1PAR1ED_I + X1KAGE_R, model = "ls", data = match.data(m.out1))
-
-SICof1 =  z.outSI1$get_coef()
-SISes1 = z.outSI1$get_se()
-
 ```
+
+
 Now we get the estimates for the second data set
 ```{r}
 setwd("~/Google Drive/PARCS/Projects/PropScore/Data")
