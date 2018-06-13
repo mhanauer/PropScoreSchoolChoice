@@ -8,94 +8,47 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 Here we are setting the WD to google drive.  See earlier versions for getting the original data source.
+
+The focus is on self-control, so just grab that.  Need teacher self-report self control  
+Get rid of school change, just looking ITT effect so what is the effect of starting in a private school
+We need all four self control, child demographics (all binary), parental demographics (all binary).
+You have time points 1,2,4 it is ok that there are different intervals between them, because multilevel modeling time points can be spaced out differently.  
+
+Poverty on page 7-49, poverty
+Coding parent one employment 35 hours or more or less than 35 hours
+Can create SES look on page 7-50 if you need to create it later.
+Poverty is 200 percent below
+Employment 35 hours or more is one and else two
+
+Education?  
+PAR race is white and non-white
+
+Only one research question whether public school (as you define it) versus private school as you define it.  Future researchers will need to gain access to whether a student was in a charter school and start to analyze differences between those options and public and versuss private.
+S2REGSKL ECLS1998-1999
 ```{r}
-#setwd("~/Google Drive/PARCS/Projects/ECLSK2011/Data")
+#setwd("~/Box Sync/PropScore")
 #data = read.csv("ELCS-K-2011.csv", header = TRUE)
 
-# X12CHGSCH only have one for this variable so put in zeros for the rest rep(length(X12CHGSCH), 0), X12CHGTCH, X34CHGTCH
-# Need to grab the second year versions of these.  If no second version, create a second version with the "2 and 4" title so we can aggregate the data later.
-
-# Ok just need first one and then take the difference between the dependent variables to create 
-
-data1 = cbind(X1PRNCON = data$X4PRNCON-data$X1PRNCON, X1PRNSOC = data$X4PRNSOC-data$X1PRNSOC, X1PRNSAD = data$X1PRNSAD, X1PRNIMP = data$X1PRNIMP, X1RTHET = data$X1RTHET, X1MTHET = data$X1MTHET, X1BMI = data$X1BMI, X1PAR1AGE = data$X1PAR1AGE, X1PAR1EMP = data$X1PAR1EMP, X1HTOTAL = data$X1HTOTAL, X1POVTY = data$X2POVTY, X1PAR1ED_I = data$X12PAR1ED_I, X1LANGST = data$X12LANGST,  X1_CHSEX_R = data$X_CHSEX_R, X1HPARNT = data$X1HPARNT, X1KAGE_R = data$X1KAGE_R, S1REGSKL  = data$S2REGSKL , X1PAR1RAC = data$X1PAR1RAC, X1_RACETHP_R = data$X_RACETHP_R)
-head(data1)
+attach(data)
+data1 = cbind(X1PRNCON, X2PRNCON, X4PRNCON,X1RTHET= data$X1RTHET, X2RTHET = data$X2RTHET, X4RTHET = data$X4RTHET, X1MTHET = data$X1MTHET, X2MTHET = data$X2MTHET, X4MTHET = data$X4MTHET, X1BMI, X2BMI, X4BMI,X1HTOTAL, X2HTOTAL, X4HTOTAL, X1PAR1AGE, X2PAR1AGE, X4PAR1AGE = data$X4PAR1AGE, X1PAR1EMP, X2PAR1EMP = data$X2PAR1EMP,X4PAR1EMP = data$X4PAR1EMP, X2POVTY, X12PAR1ED_I, X12LANGST,X_CHSEX_R, S2REGSKL, X1PAR1RAC)
 
 # Change the -9 to NAs
 data1 = apply(data1, 2, function(x){ifelse(x == -9, NA, x)})
+#summary(data1)
 data1 = as.data.frame(data1)
 head(data1)
 dim(data1)
 ```
-Now we need to alter the variables to be binary in necessary.  First we create get all the variables where 1 is the interest and get those as 1 and rest as zero.  Then for parent ethnicty we change the ones to zero and everything else to one to have a non-white be one.  Then we need to grab a seperate subset of the all the remaining variables, so we don't double up on those variables when we cbind them togehter at the end.  I then needed to get the variables in the same order and rename with meaningful names.  Need to grab the correct data from data sets two and three, because those have the binary transformations.
+Getting descriptives here.   
 ```{r}
-# These all need to be transformed into 1 as one 1 and everything else zero.  They need to be from data1, because that is the data set where all of the missing values are recoded as NA's.
-data2 = cbind(X1LANGST = data1$X1LANGST,  X1_CHSEX_R = data1$X1_CHSEX_R, X1HPARNT = data1$X1HPARNT)
+datCon = data1[c(1:19)]
+head(datCon)
+datCat = data1[c(20:30)]
+head(datCat)
 
-data2 = ifelse(is.na(data2), NA, ifelse(data2 == 1, 1,0))
-data2 = as.data.frame(data2)
-head(data2)
-
-# Here is the ethnicity variable that needs to be transformed into the original variables that you used.  Remember that original variable were incorrect and just keeping the names the same here for consistency.
-data3 = data1$X1_RACETHP_R
-data3 = as.data.frame(data3)
-X_HISP_R = ifelse(is.na(data3), NA, ifelse(data3 == 3 | data3 == 4, 1, 0))
-X_HISP_R = as.data.frame(X_HISP_R)
-names(X_HISP_R) = c("X_HISP_R")
-#Instead of changing all of the names, just replaced the other ethnicity with white
-X_WHITE_R = ifelse(is.na(data3), NA, ifelse(data3 == 1, 1, 0))
-X_WHITE_R = as.data.frame(X_WHITE_R)
-names(X_WHITE_R) = c("X_WHITE_R")
-sum(X_WHITE_R, na.rm =TRUE)
-
-X_BLACK_R = ifelse(is.na(data3), NA, ifelse(data3 == 2, 1, 0))
-X_BLACK_R = as.data.frame(X_BLACK_R)
-names(X_BLACK_R) = c("X_BLACK_R")
-
-X_ASIAN_R = ifelse(is.na(data3), NA, ifelse(data3 == 5, 1, 0))
-X_ASIAN_R = as.data.frame(X_ASIAN_R)
-names(X_ASIAN_R) = c("X_ASIAN_R")
-
-X_AMINAN_R = ifelse(is.na(data3), NA, ifelse(data3 == 7, 1, 0))
-X_AMINAN_R = as.data.frame(X_AMINAN_R)
-names(X_AMINAN_R) = c("X_AMINAN_R")
-
-X_HAWPI_R = ifelse(is.na(data3), NA, ifelse(data3 == 6, 1, 0))
-X_HAWPI_R = as.data.frame(X_HAWPI_R)
-names(X_HAWPI_R) = c("X_HAWPI_R")
-
-X_MULTR_R = ifelse(is.na(data3), NA, ifelse(data3 == 8, 1, 0))
-X_MULTR_R = as.data.frame(X_MULTR_R)
-names(X_MULTR_R) = c("X_MULTR_R")
-
-
-data4 = cbind(X_HISP_R, X_WHITE_R, X_BLACK_R, X_ASIAN_R, X_AMINAN_R, X_HAWPI_R)
-data4 = as.data.frame(data4)
-
-# Need to grab the public (only regular public classrooms) versus private and magnet and charter: S2REGSKL.  Need to reverse code, because it has 1 as public and one 1 as public.
-data5 = data1$S1REGSKL
-S1REGSKL = ifelse(is.na(data5), NA, ifelse(data5 == 1, 0, 1))
-
-# Need to change 2 through 8 to be 1 and 1 to be zero and therefore 1 is all non-white parents
-data6 = cbind(X1PAR1RAC = data1$X1PAR1RAC)
-data6 = ifelse(is.na(data6), NA, ifelse(data6 == 1, 0,1))
-data6 = as.data.frame(data6)
-```
-Reording the variables to be in the correct order.  Grab each variable from the correct data set from above.
-```{r}
-# Rearrange and then rename variables to get them in the correct order.  This includes getting data2 and data3 into the correct order as well, because you need to rename all of these variables. 
-
-data7 = cbind(X1PRNCON = data1$X1PRNCON, X1PRNSOC = data1$X1PRNSOC, X1PRNSAD = data1$X1PRNSAD, X1PRNIMP = data1$X1PRNIMP, X1RTHET = data1$X1RTHET, X1MTHET = data1$X1MTHET, X1BMI = data1$X1BMI, X1PAR1AGE = data1$X1PAR1AGE, X1PAR1EMP = data$X1PAR1EMP, X1HTOTAL = data$X1HTOTAL,  X1POVTY = data1$X1POVTY, X1PAR1ED_I = data1$X1PAR1ED_I, X1KAGE_R = data1$X1KAGE_R)
-data7 = as.data.frame(data7)
-head(data7)
-data1 = cbind(data2, data4, S1REGSKL, data6,data7)
-data1 = as.data.frame(data1)
-head(data1)
-dim(data1)
 
 ```
-
-Here we will use Amelia.  Need to set m as five for five imputed data sets.  Then we place each of the variables into their appropriate categories.
-
+Now impute five data sets
 ```{r}
 library(Amelia)
 library(mitools)
@@ -115,8 +68,7 @@ Now we are analyzing one data set, using matchIT and seeing if we can get a regu
 Here are the estimates for the first model.  Need to grab the parameter estimates and sd's 
 ```{r}
 library(MatchIt)
-setwd("~/Google Drive/PARCS/Projects/PropScore/Data")
-ECLSK1  = read.csv("ECLSK1.csv", header = TRUE)
+ECLSK1  = a.out$imputations$imp1
 ECLSK1 = ECLSK1[c(-1)]
 ECLSK1 = na.omit(ECLSK1)
 ECLSK1 = as.data.frame(ECLSK1)
