@@ -37,7 +37,7 @@ S2REGSKL ECLS1998-1999
 #data = read.csv("ELCS-K-2011.csv", header = TRUE)
 
 attach(data)
-data1 = cbind(X1PRNCON, X2PRNCON, X4PRNCON,X1RTHET= data$X1RTHET, X2RTHET = data$X2RTHET, X4RTHET = data$X4RTHET, X1MTHET = data$X1MTHET, X2MTHET = data$X2MTHET, X4MTHET = data$X4MTHET, X1BMI, X2BMI, X4BMI,X1HTOTAL, X2HTOTAL, X4HTOTAL, X1PAR1AGE, X2PAR1AGE, X4PAR1AGE = data$X4PAR1AGE, X1PAR1EMP, X2PAR1EMP = data$X2PAR1EMP,X4PAR1EMP = data$X4PAR1EMP, X2POVTY, X12PAR1ED_I, X12LANGST,X_CHSEX_R, S2REGSKL, X1PAR1RAC, X1_RACETHP_R = data$X_RACETHP_R)
+data1 = cbind(X1PRNCON, X2PRNCON, X4PRNCON,X1RTHET= data$X1RTHET, X2RTHET = data$X2RTHET, X4RTHET = data$X4RTHET, X1MTHET = data$X1MTHET, X2MTHET = data$X2MTHET, X4MTHET = data$X4MTHET, X1BMI, X2BMI, X4BMI,X1HTOTAL, X2HTOTAL, X4HTOTAL, X1PAR1AGE, X2PAR1AGE, X4PAR1AGE = data$X4PAR1AGE, X1PAR1EMP,X4PAR1EMP = data$X4PAR1EMP, X2POVTY, X12PAR1ED_I, X12LANGST,X_CHSEX_R, S2REGSKL, X1PAR1RAC, X1_RACETHP_R = data$X_RACETHP_R)
 
 summary(data1)
 # Change the -9 to NAs
@@ -61,9 +61,10 @@ apply(datCat, 2, function(x){describe.factor(x)})
 datCat = data.frame(apply(datCat, 2, function(x){(ifelse(x > 1, 0, 1))}))
 head(datCat)
 data1 = data.frame(data1, datCat)
+head(data1)
 ```
 Descriptives:
-
+Descirptives with no missing values.
 Getting descriptives here.  Not a great solution, but we get with and without missing data.  Then change to long later and then impute again and use that data set to do the data analysis. Maybe run more imputations to make sure you get similar results.    
 ```{r}
 dataDesc = data1
@@ -91,7 +92,7 @@ library(mitools)
 library(survey)
 head(data1)
 m = 5
-a.out = amelia(x = data1, m=m, logs = c("X1HTOTAL", "X2HTOTAL", "X4HTOTAL"), noms = c("X1PAR1EMP", "X2PAR1EMP","X4PAR1EMP", "X2POVTY", "X12PAR1ED_I", "X12LANGST","X_CHSEX_R", "S2REGSKL", "X1PAR1RAC"))
+a.out = amelia(x = data1, m=m, logs = c("X1HTOTAL", "X2HTOTAL", "X4HTOTAL"), noms = c("X1PAR1EMP","X4PAR1EMP", "X2POVTY", "X12PAR1ED_I", "X12LANGST","X_CHSEX_R", "S2REGSKL", "X1PAR1RAC", "X1_RACETHP_R"))
 # Now we can creat seperate data set and then analyze them seperately and combine them later with the mi.meld function in Ameila
 summary(a.out)
 compare.density(a.out, var = "X1PRNCON", main = "Observed and Imputed values of Self Control")
