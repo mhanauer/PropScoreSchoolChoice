@@ -10,6 +10,9 @@ Need to library packages
 ```{r}
 library(psych)
 library(prettyR)
+library(Amelia)
+library(mitools)
+library(MatchIt)
 ```
 
 
@@ -32,12 +35,14 @@ PAR race is white and non-white
 
 Only one research question whether public school (as you define it) versus private school as you define it.  Future researchers will need to gain access to whether a student was in a charter school and start to analyze differences between those options and public and versuss private.
 S2REGSKL ECLS1998-1999
+
+If there are only two measurements, just including the baseline, because when we trasform to long version you need to transform all time points the same otherwise it repeats, which is fine, we are just treating those as time invariant variables.
 ```{r}
 #setwd("~/Box Sync/PropScore")
 #data = read.csv("ELCS-K-2011.csv", header = TRUE)
 
 attach(data)
-data1 = cbind(X1PRNCON, X2PRNCON, X4PRNCON,X1RTHET= data$X1RTHET, X2RTHET = data$X2RTHET, X4RTHET = data$X4RTHET, X1MTHET = data$X1MTHET, X2MTHET = data$X2MTHET, X4MTHET = data$X4MTHET, X1BMI, X2BMI, X4BMI,X1HTOTAL, X2HTOTAL, X4HTOTAL, X1PAR1AGE, X2PAR1AGE, X4PAR1AGE = data$X4PAR1AGE, X1PAR1EMP,X4PAR1EMP = data$X4PAR1EMP, X2POVTY, X12PAR1ED_I, X12LANGST,X_CHSEX_R, S2REGSKL, X1PAR1RAC, X1_RACETHP_R = data$X_RACETHP_R)
+data1 = cbind(X1PRNCON, X2PRNCON, X4PRNCON,X1RTHET= data$X1RTHET, X2RTHET = data$X2RTHET, X4RTHET = data$X4RTHET, X1MTHET = data$X1MTHET, X2MTHET = data$X2MTHET, X4MTHET = data$X4MTHET, X1BMI, X2BMI, X4BMI,X1HTOTAL, X2HTOTAL, X4HTOTAL, X1PAR1AGE, X2PAR1AGE, X4PAR1AGE = data$X4PAR1AGE, X1PAR1EMP, X2POVTY, X12PAR1ED_I, X12LANGST,X_CHSEX_R, S2REGSKL, X1PAR1RAC, X1_RACETHP_R = data$X_RACETHP_R)
 
 summary(data1)
 # Change the -9 to NAs
@@ -53,9 +58,9 @@ Put the demographics back into the data1 data set with them transformed.
 
 Remember that R does not transform NA into zeros, so the code below works.
 ```{r}
-datCat = data1[c(19:27)]
+datCat = data1[c(19:26)]
 head(datCat)
-data1[c(19:27)] = NULL
+data1[c(19:26)] = NULL
 datCat
 apply(datCat, 2, function(x){describe.factor(x)})
 datCat = data.frame(apply(datCat, 2, function(x){(ifelse(x > 1, 0, 1))}))
@@ -79,20 +84,16 @@ mean_sd_fun = function(x){
   mean_sd = cbind(mean_mean, sd_sd)
 }
 apply(datCon, 2, mean_sd_fun)
-datCat = dataDesc[c(19:27)]
+datCat = dataDesc[c(19:26)]
 head(datCat)
 apply(datCat, 2, function(x){describe.factor(x)})
 ```
 Now getting descriptives using data imputation.  
 
-data1 = cbind(, X1PAR1EMP, X2PAR1EMP = data$X2PAR1EMP,X4PAR1EMP = data$X4PAR1EMP, X2POVTY, X12PAR1ED_I, X12LANGST,X_CHSEX_R, S2REGSKL, X1PAR1RAC)
 ```{r}
-library(Amelia)
-library(mitools)
-library(survey)
 head(data1)
 m = 5
-a.out = amelia(x = data1, m=m, logs = c("X1HTOTAL", "X2HTOTAL", "X4HTOTAL"), noms = c("X1PAR1EMP","X4PAR1EMP", "X2POVTY", "X12PAR1ED_I", "X12LANGST","X_CHSEX_R", "S2REGSKL", "X1PAR1RAC", "X1_RACETHP_R"))
+a.out = amelia(x = data1, m=m, logs = c("X1HTOTAL", "X2HTOTAL", "X4HTOTAL"), noms = c("X1PAR1EMP", "X2POVTY", "X12PAR1ED_I", "X12LANGST","X_CHSEX_R", "S2REGSKL", "X1PAR1RAC", "X1_RACETHP_R"))
 # Now we can creat seperate data set and then analyze them seperately and combine them later with the mi.meld function in Ameila
 summary(a.out)
 compare.density(a.out, var = "X1PRNCON", main = "Observed and Imputed values of Self Control")
@@ -108,7 +109,6 @@ Then you need to combine the correctly
 descFun = function(x){
   x = data.frame(t(x))
 }
-
 
 mean.out = NULL
 for(i in 1:m){
@@ -134,14 +134,11 @@ Now we are analyzing one data set, using matchIT and seeing if we can get a regu
 
 Here are the estimates for the first model.  Need to grab the parameter estimates and sd's 
 ```{r}
-library(MatchIt)
-m.out = NULL
-head(data1)
-m.out = matchit()
 
+m.out = NULL
 
 # Need to change all of these to include the new covariates
-m.out1 = matchit(S2REGSKL ~. , data = a.out$imputations$imp1, method = "nearest", ratio = 1)
+m.out1 = matchit(S2REGSKL ~ X1PRNCON + X2PRNCON + X4PRNCON +X1RTHET +X2RTHET + X4RTHET + X1MTHET + X2MTHET + X4MTHET + X1BMI +X2BMI + X4BMI + X1HTOTAL + X2HTOTAL + X4HTOTAL + X1PAR1AGE + X2PAR1AGE + X4PAR1AGE + X1PAR1EMP + X2POVTY + X12PAR1ED_I + X12LANGST + X_CHSEX_R + S2REGSKL + X1PAR1RAC + X1_RACETHP_R, data = a.out$imputations$imp1, method = "nearest", ratio = 1)
 
 summary(m.out1)
 plot(m.out1, type = "jitter")
