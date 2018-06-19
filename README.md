@@ -6,268 +6,215 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
-
-Here we are setting the WD to google drive.  See earlier versions for getting the original data source.
+Need to library packages
 ```{r}
-#setwd("~/Google Drive/PARCS/Projects/ECLSK2011/Data")
-#data = read.csv("ELCS-K-2011.csv", header = TRUE)
-
-# Need to grab the second year versions of these.  If no second version, create a second version with the "2 and 4" title so we can aggregate the data later.
-data1 = cbind(X1PRNCON = data$X1PRNCON, X2PRNCON = data$X2PRNCON, X4PRNCON = data$X4PRNCON, X1PRNSOC = data$X1PRNSOC, X2PRNSOC = data$X2PRNSOC, X4PRNSOC = data$X4PRNSOC, X1BMI = data$X1BMI, X2BMI = data$X2BMI, X4BMI = data$X4BMI, X1PAR1AGE = data$X1PAR1AGE, X2PAR1AGE = data$X2PAR1AGE, X4PAR1AGE = X4PAR1AGE_R, X1PAR1EMP = data$X1PAR1EMP, X2PAR1EMP = data$X1PAR1EMP, X4PAR1EMP = data$X4PAR1EMP_I, X1HTOTAL = data$X1HTOTAL, X2HTOTAL = data$X2HTOTAL, X4HTOTAL = data$X4HTOTAL, X1NUMSIB = data$X1NUMSIB, X2NUMSIB = data$X2NUMSIB, X4NUMSIB = data$X4NUMSIB, X1POVTY = data$X2POVTY, X2POVTY = data$X2POVTY, X4POVTY_I = data$X4POVTY_I, X1SESL = data$X12SESL, X2SESL = data$X12SESL, X4SESL_I = data$X4SESL_I, X1PAR1ED_I = data$X12PAR1ED_I, X2PAR1ED_I = data$X12PAR1ED_I, X4PAR1ED_I = data$X4PAR1ED_I, X1LANGST = data$X12LANGST, X2LANGST = data$X12LANGST, X4LANGST = data$X4LANGST,  X1_CHSEX_R = data$X_CHSEX_R, X2_CHSEX_R = data$X_CHSEX_R, X4_CHSEX_R = data$X_CHSEX_R, X1HPARNT = data$X1HPARNT, X2HPARNT = data$X2HPARNT,  X4HPARNT = data$X4HPARNT, S1REGSKL  = data$S2REGSKL, S2REGSKL  = data$S2REGSKL, S4REGSKL  = data$S2REGSKL, W1P0 = data$W1P0, data[,10894:10973])
-head(data1)
-
-
-# These are variables that will need to be changed to binary at a later date.
-data2 = cbind(X12LANGST = data$X12LANGST,  X_CHSEX_R = data$X_CHSEX_R, X1RESREL = data$X1RESREL, X1HPARNT = data$X1HPARNT, X1PRIMNW = data$X1PRIMNW)
-head(data2)
-# We will need to create new variables for each race with this variable.
-data3 = cbind(X_RACETHP_R = data$X_RACETHP_R)
-
-data4  = cbind( X1PAR1RAC = data$X1PAR1RAC)
-data4 = as.data.frame(data4)
-
-#Combining all four of the datas.  Keeping them seperate for data transformations below
-data1 = cbind(data1, data2, data3, data4)
-head(data1)
-# Change the -9 to NAs
-data1 = apply(data1, 2, function(x){ifelse(x == -9, NA, x)})
-data1 = as.data.frame(data1)
-head(data1)
-```
-Now we need to alter the variables to be binary in necessary.  First we create get all the variables where 1 is the interest and get those as 1 and rest as zero.  Then for parent ethnicty we change the ones to zero and everything else to one to have a non-white be one.  Then we need to grab a seperate subset of the all the remaining variables, so we don't double up on those variables when we cbind them togehter at the end.  I then needed to get the variables in the same order and rename with meaningful names.  Need to grab the correct data from data sets two and three, because those have the binary transformations.
-```{r}
-
-data2 = cbind(X12LANGST = data1$X12LANGST,  X_CHSEX_R = data1$X_CHSEX_R, X1RESREL = data1$X1RESREL, X1HPARNT = data1$X1HPARNT, X1PRIMNW = data1$X1PRIMNW)
-
-data2 = ifelse(is.na(data2), NA, ifelse(data2 == 1, 1,0))
-data2 = as.data.frame(data2)
-head(data2)
-
-# Here is the ethnicity variable that needs to be transformed into the original variables that you used.  Remember that original variable were incorrect and just keeping the names the same here for consistency.
-X_HISP_R = ifelse(is.na(data3), NA, ifelse(data3 == 3 | data3 == 4, 1, 0))
-X_HISP_R = as.data.frame(X_HISP_R)
-names(X_HISP_R) = c("X_HISP_R")
-#Instead of changing all of the names, just replaced the other ethnicity with white
-X_WHITE_R = ifelse(is.na(data3), NA, ifelse(data3 == 1, 1, 0))
-X_WHITE_R = as.data.frame(X_WHITE_R)
-names(X_WHITE_R) = c("X_WHITE_R")
-sum(X_WHITE_R, na.rm =TRUE)
-
-X_BLACK_R = ifelse(is.na(data3), NA, ifelse(data3 == 2, 1, 0))
-X_BLACK_R = as.data.frame(X_BLACK_R)
-names(X_BLACK_R) = c("X_BLACK_R")
-
-X_ASIAN_R = ifelse(is.na(data3), NA, ifelse(data3 == 5, 1, 0))
-X_ASIAN_R = as.data.frame(X_ASIAN_R)
-names(X_ASIAN_R) = c("X_ASIAN_R")
-
-X_AMINAN_R = ifelse(is.na(data3), NA, ifelse(data3 == 7, 1, 0))
-X_AMINAN_R = as.data.frame(X_AMINAN_R)
-names(X_AMINAN_R) = c("X_AMINAN_R")
-
-X_HAWPI_R = ifelse(is.na(data3), NA, ifelse(data3 == 6, 1, 0))
-X_HAWPI_R = as.data.frame(X_HAWPI_R)
-names(X_HAWPI_R) = c("X_HAWPI_R")
-
-X_MULTR_R = ifelse(is.na(data3), NA, ifelse(data3 == 8, 1, 0))
-X_MULTR_R = as.data.frame(X_MULTR_R)
-names(X_MULTR_R) = c("X_MULTR_R")
-
-
-data4 = cbind(X_HISP_R, X_WHITE_R, X_BLACK_R, X_ASIAN_R, X_AMINAN_R, X_AMINAN_R, X_HAWPI_R, X_MULTR_R)
-data4 = as.data.frame(data4)
-
-# Need to grab the public (only regular public classrooms) versus private and magnet and charter: S2REGSKL.  Need to reverse code, because it has 1 as public and one 1 as public.
-
-data7 = 
-
-# Need to change 2 through 8 to be 1 and 1 to be zero and therefore 1 is all non-white parents
-data6 = cbind(X1PAR1RAC = data1$X1PAR1RAC)
-data6 = ifelse(is.na(data6), NA, ifelse(data6 == 1, 0,1))
-data6 = as.data.frame(data6)
-```
-Reording the variables to be in the correct order.  Grab each variable from the correct data set from above.
-```{r}
-# Rearrange and then rename variables to get them in the correct order.  This includes getting data2 and data3 into the correct order as well, because you need to rename all of these variables. 
-
-data5 = cbind(X1PRNCON = data1$X1PRNCON, X1PRNSOC = data1$X1PRNSOC, X1PRNSAD = data1$X1PRNSAD, X1PRNIMP = data1$X1PRNIMP, X1PRNAPP = data1$X1PRNAPP,X_HISP_R = data4$X_HISP_R, X_WHITE_R = data4$X_WHITE_R, X_BLACK_R = data4$X_BLACK_R, X_ASIAN_R = data4$X_ASIAN_R, X_AMINAN_R = data4$X_AMINAN_R, X_HAWPI_R = data4$X_HAWPI_R, X_MULTR_R = data4$X_MULTR_R, X_CHSEX_R = data2$X_CHSEX_R, X1BMI = data1$X1BMI,X1RESREL = data2$X1RESREL,X1HPARNT = data2$X1HPARNT, X1PAR1AGE = data1$X1PAR1AGE, X1PAR1RAC = data6$X1PAR1RAC,X12PAR1ED_I = data1$X12PAR1ED_I, X1PAR1EMP = data1$X1PAR1EMP, X1HTOTAL = data1$X1HTOTAL, X1NUMSIB = data1$X1NUMSIB, X1PRIMNW = data2$X1PRIMNW, X2POVTY = data1$X2POVTY, X12SESL = data1$X12SESL)
-
-head(data5)
-
-
-data1 = cbind(data5, W1P0 = data1[,19], data1[,20:99])
-data1 = as.data.frame(data1)
-
-head(data1)
-```
-
-Here we will use Amelia.  Need to set m as five for five imputed data sets.  Then we place each of the variables into their appropriate categories.
-
-```{r}
+library(psych)
+library(prettyR)
 library(Amelia)
 library(mitools)
-library(survey)
+library(MatchIt)
+library(reshape2)
+library(nlme)
+```
+Here we are setting the WD to google drive.  See earlier versions for getting the original data source.
+
+The focus is on self-control, so just grab that.  Need teacher self-report self control  
+Get rid of school change, just looking ITT effect so what is the effect of starting in a private school
+We need all four self control, child demographics (all binary), parental demographics (all binary).
+You have time points 1,2,4 it is ok that there are different intervals between them, because multilevel modeling time points can be spaced out differently.  
+
+Poverty on page 7-49, poverty
+Coding parent one employment 35 hours or more or less than 35 hours
+Can create SES look on page 7-50 if you need to create it later.
+Poverty is 200 percent below
+Employment 35 hours or more is one and else two
+
+Education?  
+PAR race is white and non-white
+
+Only one research question whether public school (as you define it) versus private school as you define it.  Future researchers will need to gain access to whether a student was in a charter school and start to analyze differences between those options and public and versuss private.
+S2REGSKL ECLS1998-1999
+
+If there are only two measurements, just including the baseline, because when we trasform to long version you need to transform all time points the same otherwise it repeats, which is fine, we are just treating those as time invariant variables.
+
+```{r}
+#setwd("~/Box Sync/PropScore")
+#data = read.csv("ELCS-K-2011.csv", header = TRUE)
+
+attach(data)
+data1 = cbind(X1TCHCON, X2TCHCON, X4TCHCON,X1RTHET= data$X1RTHET, X2RTHET = data$X2RTHET, X4RTHET = data$X4RTHET, X1MTHET = data$X1MTHET, X2MTHET = data$X2MTHET, X4MTHET = data$X4MTHET, X1BMI, X2BMI, X4BMI,X1HTOTAL, X2HTOTAL, X4HTOTAL, X1PAR1AGE, X2PAR1AGE, X4PAR1AGE = data$X4PAR1AGE, X1PAR1EMP, X2POVTY, X12PAR1ED_I, X12LANGST,X_CHSEX_R, X1PUBPRI, X1PAR1RAC, X1_RACETHP_R = data$X_RACETHP_R)
+# Change the -9 to NAs
+data1 = apply(data1, 2, function(x){ifelse(x == -9, NA, x)})
+#summary(data1)
+data1 = as.data.frame(data1)
+head(data1)
+dim(data1)
+```
+Make the demographics binary first then replace them.  Easier for imputation and not interested in the effects of demographics, just using them as controls.  
+
+Put the demographics back into the data1 data set with them transformed.
+
+Remember that R does not transform NA into zeros, so the code below works.
+Remember to reverse code, because public schools is 1 and your hypothesis is that there private schools should have a make difference.
+```{r}
+datCat = data1[c(19:26)]
+head(datCat)
+data1[c(19:26)] = NULL
+datCat
+apply(datCat, 2, function(x){describe.factor(x)})
+datCat = data.frame(apply(datCat, 2, function(x){(ifelse(x > 1, 0, 1))}))
+head(datCat)
+
+## Need to recode the public private indicator
+data1 = data.frame(data1, datCat)
+head(data1)
+data1$X1PUBPRI = ifelse(data1$X1PUBPRI == 1,0,1) 
+summary(data1$X1PUBPRI)
+summary(data1)
+```
+Descriptives:
+Descirptives with no missing values.
+Getting descriptives here.  Not a great solution, but we get with and without missing data.  Then change to long later and then impute again and use that data set to do the data analysis. Maybe run more imputations to make sure you get similar results.    
+
+Getting the baseline data only 
+```{r}
+dataDesc = data1
+dim(dataDesc)
+dataDesc = na.omit(dataDesc)
+dim(dataDesc)
+datCon = dataDesc[c(1:18)]
+head(datCon)
+mean_sd_fun = function(x){
+  mean_mean = mean(x)
+  sd_sd = sd(x)
+  mean_sd = cbind(mean_mean, sd_sd)
+}
+apply(datCon, 2, mean_sd_fun)
+datCat = dataDesc[c(19:26)]
+head(datCat)
+apply(datCat, 2, function(x){describe.factor(x)})
+```
+Now getting descriptives using data imputation.  
+
+```{r}
+head(data1)
 m = 5
-a.out = amelia(x = data1, m=m, ords = c("X1PAR1EMP", "X2POVTY", "X12PAR1ED_I"), logs = c("X1HTOTAL", "X1NUMSIB"), noms = c("X_HISP_R", "X_WHITE_R", "X_BLACK_R", "X_ASIAN_R", "X_AMINAN_R", "X_HAWPI_R", "X_MULTR_R", "X_CHSEX_R", "X1RESREL", "X1HPARNT", "X1PRIMNW", "X1PAR1RAC"))
+a.out = amelia(x = data1, m=m, logs = c("X1HTOTAL", "X2HTOTAL", "X4HTOTAL"), noms = c("X1PAR1EMP", "X2POVTY", "X12PAR1ED_I", "X12LANGST","X_CHSEX_R", "X1PUBPRI", "X1PAR1RAC", "X1_RACETHP_R"))
 # Now we can creat seperate data set and then analyze them seperately and combine them later with the mi.meld function in Ameila
-write.amelia(obj = a.out, file.stem = "ECLSK")
-head(a.out.imp[c(1:6)])
-test = a.out.imp$imputations$imp1
+summary(a.out)
+compare.density(a.out, var = "X1TCHCON", main = "Observed and Imputed values of Self Control Time 1")
+compare.density(a.out, var = "X2TCHCON", main = "Observed and Imputed values of Self Control Time 2")
+compare.density(a.out, var = "X4TCHCON", main = "Observed and Imputed values of Self Control Time 4")
+disperse(a.out)
 ```
+Descriptives:
+Descirptives when missing values are imputed for the tables
+So need to write a loop for the functions that produce the means for each.  Because everything is dichomoized can just get counts from means.
+Then you need to combine the correctly 
 
-Here we are analyzing data from the first imputted data set ECLSK1 
+Here we need to subset the data so that it is only the first time point for each
 ```{r}
-setwd("~/Google Drive/PARCS/Projects/ECLSK2011/Data/ImputedFirst")
-ECLSK1  = read.csv("ECLSK1.csv", header = TRUE)
-ECLSK1 = ECLSK1[c(-1)]
-ECLSK1 = as.data.frame(ECLSK1)
+a.out.imputationsDesc = a.out$imputations
+a.out.imputationsDesc = lapply(1:m, function(x) subset(a.out.imputationsDesc[[x]]))
+descFun = function(x){
+  x = data.frame(t(x))
+}
 
-scdrep1 = svrepdesign(data = ECLSK1, type="JKn", repweights = ECLSK1[,26:106], weights = ECLSK1[,26], combined.weights = TRUE, rscales = 1, scale = 1, nest = TRUE)
+mean.out = NULL
+for(i in 1:m){
+  mean.out[[i]] = apply(a.out.imputationsDesc[[i]], 2, mean)
+  mean.out = data.frame(mean.out)
+}
 
-# Grab descriptives
-svyMean1 = svymean(ECLSK1, scdrep1)
+mean.out = descFun(mean.out)
+mean.out
 
-modelSI1 = svyglm(log(X1PRNSOC) ~X_HISP_R + X_BLACK_R + X_ASIAN_R+ X_AMINAN_R+ X_HAWPI_R+ X_MULTR_R+  X_CHSEX_R+ + X1BMI + X1HPARNT + X1PAR1AGE  + X1PAR1RAC  + X12PAR1ED_I  + X1PAR1EMP  + X1HTOTAL + X1NUMSIB +  X1PRIMNW  + X2POVTY + X12SESL, scdrep1)
+sd.out = NULL
+for(i in 1:m){
+  sd.out[[i]] = apply(a.out.imputationsDesc[[i]], 2, sd)
+  sd.out = data.frame(sd.out)
+}
+sd.out = descFun(sd.out)
+sd.out
 
-
-modelSI1Coef= summary(modelSI1)$coefficients[,1:2]
-modelSI1Coef = as.data.frame(t(modelSI1Coef))
-
+mean.sd.out= mi.meld(mean.out, sd.out)
+mean.sd.out
 ```
-Here we are analyzing data from the second imputted data set ECLSK2
+Now we are analyzing one data set, using matchIT and seeing if we can get a regular regression and then a multilevel model with time.  We matched everyone.
+
+Here are the estimates for the first model.  Need to grab the parameter estimates and sd's 
+Cannot run a loop over the five data sets.  Try lm and work from there
+
+This model works wide format, because we only want pretreatment covariates or baseline covariates
+Need to grab the weights (these are indicating whether the person is in the treatment). Then grab the treatment indicator, because it is erased in the regression.  
+
+You need to grab the time varying covariates, because they are not included after matching
 ```{r}
-setwd("~/Google Drive/PARCS/Projects/ECLSK2011/Data/ImputedFirst")
-ECLSK2  = read.csv("ECLSK2.csv", header = TRUE)
-ECLSK2 = ECLSK2[c(-1)]
-ECLSK2 = as.data.frame(ECLSK2)
-
-scdrep2 = svrepdesign(data = ECLSK2, type="JKn", repweights = ECLSK2[,26:106], weights = ECLSK2[,26], combined.weights = TRUE, rscales = 1, scale = 1, nest = TRUE)
-
-# Grab descriptives
-svyMean2= svymean(ECLSK2, scdrep2)
-
-
-modelSI2 = svyglm(log(X1PRNSOC) ~X_HISP_R + X_BLACK_R + X_ASIAN_R+ X_AMINAN_R+ X_HAWPI_R+ X_MULTR_R+  X_CHSEX_R+ + X1BMI  + X1HPARNT + X1PAR1AGE  + X1PAR1RAC  + X12PAR1ED_I  + X1PAR1EMP  + X1HTOTAL + X1NUMSIB +  X1PRIMNW  + X2POVTY + X12SESL, scdrep2)
-
-
-modelSI2Coef= summary(modelSI2)$coefficients[,1:2]
-modelSI2Coef = as.data.frame(t(modelSI2Coef))
+m.out = lapply(1:m, function(x) matchit(X1PUBPRI ~ X1TCHCON  +X1RTHET  + X1MTHET + X1BMI  + X1HTOTAL  + X1PAR1AGE + X1PAR1EMP + X2POVTY + X12PAR1ED_I + X12LANGST + X_CHSEX_R  + X1PAR1RAC + X1_RACETHP_R, data = a.out$imputations[[x]], method = "nearest", ratio = 1))
+plot(m.out[[1]], type = "jitter")
+plot(m.out[[1]], type = "hist")
+m.out = lapply(1:m, function(x) match.data(m.out[[x]]))
+m.out[[1]]
 ```
-Now with imputed data set three
+Put the data into long format first.  Must do this for each data seperatly, cannot loop or lapply it.
 ```{r}
-setwd("~/Google Drive/PARCS/Projects/ECLSK2011/Data/ImputedFirst")
+dat1 = data.frame(m.out[[1]])
+dat2 = data.frame(m.out[[2]])
+dat3 = data.frame(m.out[[3]])
+dat4 = data.frame(m.out[[4]])
+dat5 = data.frame(m.out[[5]])
+head(dat1)
+dat1 = reshape(dat1, varying = list(c("X1TCHCON", "X2TCHCON", "X4TCHCON"), c("X1RTHET", "X2RTHET", "X4RTHET"), c("X1MTHET", "X2MTHET", "X4MTHET"), c("X1BMI", "X2BMI", "X4BMI"), c("X1HTOTAL", "X2HTOTAL", "X4HTOTAL"), c("X1PAR1AGE", "X2PAR1AGE", "X4PAR1AGE")), times = c(0,1,2), direction = "long")
 
-ECLSK3  = read.csv("ECLSK3.csv", header = TRUE)
-ECLSK3 = ECLSK3[c(-1)]
-ECLSK3 = as.data.frame(ECLSK3)
+dat2 = reshape(dat2, varying = list(c("X1TCHCON", "X2TCHCON", "X4TCHCON"), c("X1RTHET", "X2RTHET", "X4RTHET"), c("X1MTHET", "X2MTHET", "X4MTHET"), c("X1BMI", "X2BMI", "X4BMI"), c("X1HTOTAL", "X2HTOTAL", "X4HTOTAL"), c("X1PAR1AGE", "X2PAR1AGE", "X4PAR1AGE")), times = c(0,1,2), direction = "long")
 
-scdrep3 = svrepdesign(data = ECLSK3, type="JKn", repweights = ECLSK3[,26:106], weights = ECLSK3[,26], combined.weights = TRUE, rscales = 1, scale = 1, nest = TRUE)
+dat3 = reshape(dat3, varying = list(c("X1TCHCON", "X2TCHCON", "X2TCHCON"), c("X1RTHET", "X2RTHET", "X4RTHET"), c("X1MTHET", "X2MTHET", "X4MTHET"), c("X1BMI", "X2BMI", "X4BMI"), c("X1HTOTAL", "X2HTOTAL", "X4HTOTAL"), c("X1PAR1AGE", "X2PAR1AGE", "X4PAR1AGE")), times = c(0,1,2), direction = "long")
 
-# Grab descriptives
-svyMean3= svymean(ECLSK3, scdrep3)
+dat4 = reshape(dat4, varying = list(c("X1TCHCON", "X2TCHCON", "X4TCHCON"), c("X1RTHET", "X2RTHET", "X4RTHET"), c("X1MTHET", "X2MTHET", "X4MTHET"), c("X1BMI", "X2BMI", "X4BMI"), c("X1HTOTAL", "X2HTOTAL", "X4HTOTAL"), c("X1PAR1AGE", "X2PAR1AGE", "X4PAR1AGE")), times = c(0,1,2), direction = "long")
 
+dat5 = reshape(dat5, varying = list(c("X1TCHCON", "X2TCHCON", "X4TCHCON"), c("X1RTHET", "X2RTHET", "X4RTHET"), c("X1MTHET", "X2MTHET", "X4MTHET"), c("X1BMI", "X2BMI", "X4BMI"), c("X1HTOTAL", "X2HTOTAL", "X4HTOTAL"), c("X1PAR1AGE", "X2PAR1AGE", "X4PAR1AGE")), times = c(0,1,2), direction = "long")
 
-modelSI3 = svyglm(log(X1PRNSOC) ~X_HISP_R + X_BLACK_R + X_ASIAN_R+ X_AMINAN_R+ X_HAWPI_R+ X_MULTR_R+  X_CHSEX_R+ + X1BMI  + X1HPARNT + X1PAR1AGE  + X1PAR1RAC  + X12PAR1ED_I  + X1PAR1EMP  + X1HTOTAL + X1NUMSIB +  X1PRIMNW  + X2POVTY + X12SESL, scdrep3)
-
-
-modelSI3Coef= summary(modelSI3)$coefficients[,1:2]
-modelSI3Coef = as.data.frame(t(modelSI3Coef))
+datAll = list(dat1, dat2, dat3, dat4, dat5)
 ```
-How with imputed data four
+
+Now we need to develop the multilevel models, and do sequential tests
+Need four models, one with intercept only, random intercepts, random slopes + random intercepts, plus autoregressive strcuture. Cite that you do not need matching covariates in the model.  Only need X1RTHET  + X1MTHET + X1BMI  + X1HTOTAL  + X1PAR1EMP these, because they are time varying covariates.
+
+Could wrap everything is a function and only need to write it once.  Just start with null model
+model3 with corAR1 model won't converage and neither will the random intercepts.  Just say that we evaluated the random slopes versus random intercepts and it was a better fit.
 ```{r}
-setwd("~/Google Drive/PARCS/Projects/ECLSK2011/Data/ImputedFirst")
+model1 = lapply(1:m, function(x) lme(X1TCHCON ~1, random =  ~ 1 | id, data = datAll[[x]], method = "ML"))
+summary(model1[[1]])
 
-ECLSK4  = read.csv("ECLSK4.csv", header = TRUE)
-ECLSK4 = ECLSK4[c(-1)]
-ECLSK4 = as.data.frame(ECLSK4)
+model2 = lapply(1:m, function(x) lme(X1TCHCON ~ X1PUBPRI*time + X1RTHET + X1MTHET + X1BMI + X1HTOTAL + X1PAR1EMP, random =  ~ time | id, data = datAll[[x]], method = "ML"))
 
-scdrep4 = svrepdesign(data = ECLSK4, type="JKn", repweights = ECLSK4[,26:106], weights = ECLSK4[,26], combined.weights = TRUE, rscales = 1, scale = 1, nest = TRUE)
+anova1v2 = lapply(1:m, function(x) anova(model1[[x]], model2[[x]]))
+anova1v2
 
-# Grab descriptives
-svyMean4= svymean(ECLSK4, scdrep4)
-
-modelSI4 = svyglm(log(X1PRNSOC) ~X_HISP_R + X_BLACK_R + X_ASIAN_R+ X_AMINAN_R+ X_HAWPI_R+ X_MULTR_R+  X_CHSEX_R+ + X1BMI  + X1HPARNT + X1PAR1AGE  + X1PAR1RAC  + X12PAR1ED_I  + X1PAR1EMP  + X1HTOTAL + X1NUMSIB +  X1PRIMNW  + X2POVTY + X12SESL, scdrep4)
-
-
-modelSI4Coef= summary(modelSI4)$coefficients[,1:2]
-modelSI4Coef = as.data.frame(t(modelSI4Coef))
+model3 = lapply(1:m, function(x) lme(X1TCHCON ~ X1PUBPRI*time, random =  ~ time | id, data = datAll[[x]], correlation = corAR1(), method = "ML"))
 
 ```
-Now with the fifth imputed data set
+Now combine par and se estimates from model 2.  Create this code to finish.  DF  = 10078
 ```{r}
-setwd("~/Google Drive/PARCS/Projects/ECLSK2011/Data/ImputedFirst")
- 
-ECLSK5  = read.csv("ECLSK5.csv", header = TRUE)
-ECLSK5 = ECLSK5[c(-1)]
-ECLSK5 = as.data.frame(ECLSK5)
+coefs = NULL
+for(i in 1:m){
+  coefs[[i]] = summary(model2[[i]])
+  coefs[[i]] = coefs[[i]]$tTable[[9,1]]
+}
+coefs = t(data.frame(coefs))
 
-scdrep5 = svrepdesign(data = ECLSK5, type="JKn", repweights = ECLSK5[,26:106], weights = ECLSK5[,26], combined.weights = TRUE, rscales = 1, scale = 1, nest = TRUE)
+se = NULL
+for(i in 1:m){
+  se[[i]] = summary(model2[[i]])
+  se[[i]] = se[[i]]$tTable[[9,2]]
+}
+se = t(data.frame(se))
 
-# Grab descriptives
-svyMean5= svymean(ECLSK5, scdrep5)
-
-
-modelSI5 = svyglm(log(X1PRNSOC) ~X_HISP_R + X_BLACK_R + X_ASIAN_R+ X_AMINAN_R+ X_HAWPI_R+ X_MULTR_R+  X_CHSEX_R+ + X1BMI  + X1HPARNT + X1PAR1AGE  + X1PAR1RAC  + X12PAR1ED_I  + X1PAR1EMP  + X1HTOTAL + X1NUMSIB +  X1PRIMNW  + X2POVTY + X12SESL, scdrep5)
-
-
-modelSI5Coef= summary(modelSI5)$coefficients[,1:2]
-modelSI5Coef = as.data.frame(t(modelSI5Coef))
-
-# SEtting the degrees of freedom here.
-df =  modelSI5$df.null 
+parSe = mi.meld(q = coefs, se = se)
+tStat = parSe$q.mi/parSe$se.mi
+2*pt(-abs(tStat), df = 10078)
 ```
-Now we need to rbind all of the parameter and sd estimates into two columns.  However, we need to grab the first row of these data sets, because the second row is the standard error.  We need seperate data set for the se's, because we need to stack the different sets on top of each other.
 
 
-Here we have the SI model
-```{r}
-ParsSI = rbind(modelSI1Coef[1,], modelSI2Coef[1,], modelSI3Coef[1,], modelSI4Coef[1,], modelSI5Coef[1,])
-ParsSI = as.matrix(ParsSI)
-ParsSI
-
-SeSI = rbind(modelSI1Coef[2,], modelSI2Coef[2,], modelSI3Coef[2,], modelSI4Coef[2,], modelSI5Coef[2,])
-SeSI = as.matrix(SeSI)
-SeSI
-
-SIModelSIombine = mi.meld(q = ParsSI, se = SeSI)
-
-SIModelSIombine = as.data.frame(cbind(Estimate = t(SIModelSIombine$q.mi),SE =  t(SIModelSIombine$se.mi)))
-
-names(SIModelSIombine) = c("Estimate", "SE")
-SIModelSIombine
-SIModelSIombine$T_Stat = SIModelSIombine$Estimate / SIModelSIombine$SE
-SIModelSIombine$P_Value = 2*pt(-abs(SIModelSIombine$T_Stat), df = df)
-SIModelSIombine = round(SIModelSIombine,3)
-
-SIModelSIombine$Sig = ifelse(SIModelSIombine$P_Value <= .000, "***", ifelse( SIModelSIombine$P_Value <= .01, "**", ifelse(SIModelSIombine$P_Value <= .05, "*","NS")))
-
-SIModelSIombine
-
-```
-Now we need to grab the means and standard deviations and combine them.  Need to transpose them, because Amelia takes the five different version and combines them.
-```{r}
-allSvyMeans = t(as.matrix(cbind(svyMean1, svyMean2, svyMean3, svyMean4, svyMean5)))
-# For Se's we need to create dataframes so that we can grab the se's them combine them
-SvySes1 = as.data.frame(svyMean1)
-SvySes2 = as.data.frame(svyMean2)
-SvySes3 = as.data.frame(svyMean3)
-SvySes4 = as.data.frame(svyMean4)
-SvySes5 = as.data.frame(svyMean5)
-
-SvySes1 = SvySes1$SE
-SvySes2 = SvySes2$SE
-SvySes3 = SvySes3$SE
-SvySes4 = SvySes4$SE
-SvySes5 = SvySes5$SE
-
-allSvySes = t(as.matrix(cbind(SvySes1, SvySes2, SvySes3, SvySes4, SvySes5)))
-
-allSvyMeansSes = mi.meld(q = allSvyMeans, se = allSvySes)
-
-allSvyMeansComb = t(as.data.frame(allSvyMeansSes$q.mi))
-allSvySesComb = t(as.data.frame(allSvyMeansSes$se.mi))
-
-allSvyMeansSesComb = data.frame(Mean = allSvyMeansComb, SE = allSvySesComb)
-```
 
 
