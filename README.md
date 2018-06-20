@@ -42,14 +42,12 @@ If there are only two measurements, just including the baseline, because when we
 #setwd("~/Box Sync/PropScore")
 #data = read.csv("ELCS-K-2011.csv", header = TRUE)
 
-attach(data)
-data1 = cbind(X1TCHCON, X2TCHCON, X4TCHCON,X1RTHET= data$X1RTHET, X2RTHET = data$X2RTHET, X4RTHET = data$X4RTHET, X1MTHET = data$X1MTHET, X2MTHET = data$X2MTHET, X4MTHET = data$X4MTHET, X1BMI, X2BMI, X4BMI,X1HTOTAL, X2HTOTAL, X4HTOTAL, X1PAR1AGE, X2PAR1AGE, X4PAR1AGE = data$X4PAR1AGE, X1PAR1EMP, X2POVTY, X12LANGST,X_CHSEX_R, X1PUBPRI, X1PAR1RAC, X1_RACETHP_R = data$X_RACETHP_R)
+
+data1 = cbind(X1TCHCON = data$X1TCHCON, X2TCHCON = data$X2TCHCON, X4TCHCON = data$X4TCHCON,X1RTHET= data$X1RTHET, X2RTHET = data$X2RTHET, X4RTHET = data$X4RTHET, X1MTHET = data$X1MTHET, X2MTHET = data$X2MTHET, X4MTHET = data$X4MTHET, X1BMI = data$X1BMI, X2BMI = data$X2BMI, X4BMI = data$X4BMI,X1HTOTAL = data$X1HTOTAL, X2HTOTAL = data$X2HTOTAL, X4HTOTAL = data$X4HTOTAL, X1PAR1AGE = data$X1PAR1AGE, X2PAR1AGE = data$X2PAR1AGE, X4PAR1AGE = data$X4PAR1AGE, X1PAR1EMP = data$X1PAR1EMP, X2POVTY = data$X2POVTY, X12LANGST = data$X12LANGST,X_CHSEX_R = data$X_CHSEX_R, X1PUBPRI = data$X1PUBPRI, X1PAR1RAC = data$X1PAR1RAC, X1_RACETHP_R = data$X_RACETHP_R)
 # Change the -9 to NAs
 data1 = apply(data1, 2, function(x){ifelse(x == -9, NA, x)})
 #summary(data1)
 data1 = as.data.frame(data1)
-head(data1)
-dim(data1)
 ```
 Make the demographics binary first then replace them.  Easier for imputation and not interested in the effects of demographics, just using them as controls.  
 
@@ -72,9 +70,7 @@ head(datCat)
 datCat = cbind(datCat, X12LANGST)
 ## Need to recode the public private indicator
 data1 = data.frame(data1, datCat)
-head(data1)
 data1$X1PUBPRI = ifelse(data1$X1PUBPRI == 1,0,1) 
-summary(data1$X1PUBPRI)
 summary(data1)
 ```
 Descriptives:
@@ -98,8 +94,6 @@ round(apply(datCon, 2, mean_sd_fun),3)
 datCat = dataDesc[c(19:25)]
 head(datCat)
 apply(datCat, 2, function(x){describe.factor(x)})
-summary(datCat$X1PUBPRI)
-summary(datCat)
 ```
 Now getting descriptives using data imputation.  
 
@@ -109,10 +103,11 @@ m = 5
 a.out = amelia(x = data1, m=m, logs = c("X1HTOTAL", "X2HTOTAL", "X4HTOTAL"), noms = c("X1PAR1EMP", "X2POVTY", "X12LANGST","X_CHSEX_R", "X1PUBPRI", "X1PAR1RAC", "X1_RACETHP_R"))
 # Now we can creat seperate data set and then analyze them seperately and combine them later with the mi.meld function in Ameila
 summary(a.out)
-compare.density(a.out, var = "X1TCHCON", main = "Observed and Imputed values of Self Control Time 1")
-compare.density(a.out, var = "X2TCHCON", main = "Observed and Imputed values of Self Control Time 2")
-compare.density(a.out, var = "X4TCHCON", main = "Observed and Imputed values of Self Control Time 4")
-disperse(a.out)
+#compare.density(a.out, var = "X1TCHCON", main = "Observed and Imputed values of Self Control Time 1")
+#compare.density(a.out, var = "X2TCHCON", main = "Observed and Imputed values of Self Control Time 2")
+#compare.density(a.out, var = "X4TCHCON", main = "Observed and Imputed values of Self Control Time 4")
+compare.density(a.out, var = "X12LANGST")
+#disperse(a.out)
 ```
 Descriptives:
 Descirptives when missing values are imputed for the tables
@@ -161,7 +156,6 @@ m.out = lapply(1:m, function(x) matchit(X1PUBPRI ~ X1TCHCON  +X1RTHET  + X1MTHET
 plot(m.out[[1]], type = "jitter")
 plot(m.out[[1]], type = "hist")
 m.out = lapply(1:m, function(x) match.data(m.out[[x]]))
-m.out[[1]]
 ```
 Put the data into long format first.  Must do this for each data seperatly, cannot loop or lapply it.
 ```{r}
@@ -190,7 +184,8 @@ Need four models, one with intercept only, random intercepts, random slopes + ra
 Could wrap everything is a function and only need to write it once.  Just start with null model
 model3 with corAR1 model won't converage and neither will the random intercepts.  Just say that we evaluated the random slopes versus random intercepts and it was a better fit.
 ```{r}
-model1 = lapply(1:m, function(x) lme(X1TCHCON ~1, random =  ~ 1 | id, data = datAll[[x]], method = "ML"))
+model1 = lapply(1:m, function(x) lme(fixed  = X1TCHCON ~ time, random =  ~ 1 | id, data = datAll[[x]], method = "ML"))
+
 summary(model1[[1]])
 
 model2 = lapply(1:m, function(x) lme(X1TCHCON ~ X1PUBPRI*time + X1RTHET + X1MTHET + X1BMI + X1HTOTAL + X1PAR1EMP, random =  ~ time | id, data = datAll[[x]], method = "ML"))
@@ -220,6 +215,10 @@ se = t(data.frame(se))
 parSe = mi.meld(q = coefs, se = se)
 tStat = parSe$q.mi/parSe$se.mi
 2*pt(-abs(tStat), df = 10078)
+upper = parSe$q.mi +(2*parSe$se.mi)
+upper
+lower = parSe$q.mi-(2*parSe$se.mi)
+lower
 ```
 
 
