@@ -274,9 +274,8 @@ upper
 lower = parSe$q.mi-(2*parSe$se.mi)
 lower
 ```
-
 ---
-title: "PropScoreEquations"
+title: "Equations 1.1-1.4"
 output:
   pdf_document: default
   html_document: default
@@ -286,19 +285,12 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-$$ Level~1:~~~{y_{ij} = \beta_{0j} + \beta_{1j}Time_{ij} + \beta_{xj}X_{ij} + e_{ij}}~~~ (1.1)$$
-
-Level 2 Intercept: Here the intercept is broken down into the constant plus the effect of the intervention, which is at level 2 in the intercept because it does not vary over time only by person and the error term which varies by person. 
-
+$$ Level~1:~~~{y_{ij} = \beta_{0j} + \beta_{1j}Time_{ij}...+ \beta_{xj}X_{ij} + e_{ij}}~~~ (1.1)$$
 $$ Level~2~Intercept:~~~{\beta_{0j} = \gamma_{00} + \gamma_{01}Private_{j} + u_{0j}} ~~~ (1.2)$$
-
-
-Then there is level the two slope which has the constant effect, plus the slope for the intervention for each person, plus a random error term that unique to each person.  
-
 $$ Level~2~Slope~Time:~~~{\beta_{1j} = \gamma_{10} + \gamma_{11}Private_{j} + u_{1j}} ~~~ (1.3)$$
+$$Mixed~model:~~~{y_{ij} =  (\gamma_{00}+ \gamma_{01}Private_{j} + u_{0j})...+ (\gamma_{1x}*X_{ij}) + (\gamma_{10}}+\gamma_{11}*Private_{j} +u_{1j})*Time_{ij} + e_{ij}~~~ (1.4)$$ 
 
-Then we have the mixed model, which has all the components combined
-$$Mixed~model:~~~{y_{ij} =  (\gamma_{00}+ \gamma_{01}Private_{j} + u_{0j}) + (\gamma_{1x}*X_{ij}) + (\gamma_{10}}+\gamma_{11}*Private_{j} +u_{1j})*Time_{ij} + e_{ij}~~~ (1.4)$$ 
+
 
 
 
